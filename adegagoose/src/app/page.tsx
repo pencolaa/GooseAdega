@@ -20,7 +20,7 @@ export default function Home() {
           className="bg-gray-800 text-white py-3 rounded-md font-semibold hover:bg-gray-700"
           onClick={() => router.push('/loginLoja')}
         >
-          Minha loja
+          Minha lojaaa
         </button>
         <button
           className="border border-gray-800 text-gray-800 py-3 rounded-md font-semibold hover:bg-gray-100"
