@@ -20,13 +20,13 @@ export default function Home() {
           className="bg-gray-800 text-white py-3 rounded-md font-semibold hover:bg-gray-700"
           onClick={() => router.push('/loginLoja')}
         >
-          Minha lojaaa
+          Minha loja
         </button>
         <button
           className="border border-gray-800 text-gray-800 py-3 rounded-md font-semibold hover:bg-gray-100"
           onClick={() => router.push('/loginCliente')}
         >
-          Sou clientee
+          Sou cliente
         </button>
       </div>
     </div>

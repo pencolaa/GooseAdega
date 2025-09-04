@@ -2,9 +2,18 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function RegistrarFuncionario() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [nome, setNome] = useState(""); // para enviar o nome para a confirmação
+  const router = useRouter();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // redireciona para a página de confirmação com o nome como query param
+    router.push(`/confirmacaoCadastro?nome=${encodeURIComponent(nome)}`);
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#F4E6CE] px-4">
@@ -47,7 +56,24 @@ export default function RegistrarFuncionario() {
         </div>
 
         {/* Formulário */}
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* Nome */}
+          <div>
+            <label htmlFor="nome" className="block text-sm font-medium text-[#38331E]">
+              Nome:
+            </label>
+            <input
+              type="text"
+              id="nome"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              required
+              placeholder="Digite o nome"
+              style={{ borderWidth: "3px", borderColor: "#38331E", color: "#38331E" }}
+              className="w-full mt-2 px-4 py-3 rounded-md shadow-sm placeholder-[#38331E] focus:outline-none focus:ring-2 focus:ring-[#4B4729]"
+            />
+          </div>
+
           {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-[#38331E]">
