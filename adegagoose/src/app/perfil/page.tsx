@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface Funcionario {
   id: number;
@@ -10,11 +11,13 @@ interface Funcionario {
 }
 
 export default function PerfilRestaurante() {
+  const router = useRouter();
+
   // Perfil do chefe
   const chefe = {
     nome: "Carlos Silva",
     cargo: "Gerente do Restaurante",
-    imagem: "/chefe.jpg", // caminho da imagem
+    imagem: "/chefe.jpg",
   };
 
   // Lista de funcionários
@@ -65,7 +68,7 @@ export default function PerfilRestaurante() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F4E6CE] px-4 py-6">
+    <div className="relative flex flex-col min-h-screen bg-[#F4E6CE] px-4 py-6">
       {/* Perfil do Chefe */}
       <div className="flex flex-col items-center mb-8 bg-[#D9AB67] p-6 rounded-lg shadow-lg">
         <Image
@@ -120,6 +123,15 @@ export default function PerfilRestaurante() {
           </div>
         ))}
       </div>
+
+      {/* Botão de voltar fixo no canto inferior esquerdo */}
+      <button
+        onClick={() => router.back()}
+        className="absolute bottom-4 left-4 px-4 py-2 rounded-md text-sm font-semibold hover:opacity-90 transition"
+        style={{ backgroundColor: "#38331E", color: "white" }}
+      >
+        ← Voltar
+      </button>
     </div>
   );
 }

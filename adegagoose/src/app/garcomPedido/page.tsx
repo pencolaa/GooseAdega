@@ -1,147 +1,174 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { useMesas, Produto } from "../context/MesaContext";
 
-interface Produto {
-  id: number;
-  nome: string;
-  preco: number;
-}
+export default function GarcomPedido() {
+  const { mesas, adicionarProduto } = useMesas();
 
-interface Mesa {
-  id: number;
-  nome: string;
-  ocupada: boolean;
-}
+  const [mesaId, setMesaId] = useState<number | null>(null);
+  const [produtosSelecionados, setProdutosSelecionados] = useState<Produto[]>([]);
 
-export default function PedidosGarcom() {
-  // Mesas
-  const mesas: Mesa[] = [
-    { id: 1, nome: "Mesa 1", ocupada: true },
-    { id: 2, nome: "Mesa 2", ocupada: true },
-    { id: 3, nome: "Mesa 3", ocupada: false },
-    { id: 4, nome: "Mesa 4", ocupada: true },
-    { id: 5, nome: "Mesa 5", ocupada: false },
+  const categorias: { nome: string; produtos: Produto[] }[] = [
+    // Mesmas categorias do seu código anterior
+    {
+      nome: "Lanches",
+      produtos: [
+        { nome: "Hambúrguer Clássico", preco: 30 },
+        { nome: "Cheeseburger", preco: 32 },
+        { nome: "X-Salada", preco: 33 },
+        { nome: "X-Bacon", preco: 35 },
+        { nome: "Hot Dog", preco: 25 },
+        { nome: "Frango Empanado", preco: 28 },
+        { nome: "Sanduíche Vegetariano", preco: 30 },
+        { nome: "Wrap de Frango", preco: 31 },
+        { nome: "Hambúrguer Vegano", preco: 34 },
+        { nome: "Batata Recheada", preco: 29 },
+      ],
+    },
+    {
+      nome: "Refrigerantes",
+      produtos: [
+        { nome: "Coca-Cola", preco: 5 },
+        { nome: "Guaraná", preco: 5 },
+        { nome: "Fanta Laranja", preco: 5 },
+        { nome: "Fanta Uva", preco: 5 },
+        { nome: "Sprite", preco: 5 },
+        { nome: "Pepsi", preco: 5 },
+        { nome: "H2OH!", preco: 6 },
+        { nome: "Schweppes", preco: 6 },
+        { nome: "Suco de Laranja", preco: 6 },
+        { nome: "Suco de Uva", preco: 6 },
+      ],
+    },
+    {
+      nome: "Drinks",
+      produtos: [
+        { nome: "Caipirinha", preco: 15 },
+        { nome: "Mojito", preco: 18 },
+        { nome: "Sex on the Beach", preco: 20 },
+        { nome: "Piña Colada", preco: 20 },
+        { nome: "Margarita", preco: 22 },
+        { nome: "Bloody Mary", preco: 19 },
+        { nome: "Cosmopolitan", preco: 21 },
+        { nome: "Gin Tônica", preco: 18 },
+        { nome: "Cuba Libre", preco: 16 },
+        { nome: "Martini", preco: 23 },
+      ],
+    },
+    {
+      nome: "Cervejas",
+      produtos: [
+        { nome: "Heineken", preco: 12 },
+        { nome: "Budweiser", preco: 11 },
+        { nome: "Skol", preco: 10 },
+        { nome: "Brahma", preco: 10 },
+        { nome: "Stella Artois", preco: 13 },
+        { nome: "Corona", preco: 14 },
+        { nome: "Beck's", preco: 13 },
+        { nome: "Eisenbahn", preco: 15 },
+        { nome: "Bohemia", preco: 12 },
+        { nome: "Antarctica", preco: 10 },
+      ],
+    },
+    {
+      nome: "Narguiles",
+      produtos: [
+        { nome: "Maçã", preco: 50 },
+        { nome: "Menta", preco: 45 },
+        { nome: "Uva", preco: 48 },
+        { nome: "Melancia", preco: 47 },
+        { nome: "Morango", preco: 50 },
+        { nome: "Blueberry", preco: 52 },
+        { nome: "Coco", preco: 49 },
+        { nome: "Manga", preco: 50 },
+        { nome: "Limão", preco: 46 },
+        { nome: "Tropical Mix", preco: 55 },
+      ],
+    },
   ];
 
-  // Produtos disponíveis
-  const produtos: Produto[] = [
-    { id: 1, nome: "Cerveja Heineken", preco: 12.9 },
-    { id: 2, nome: "Vodka Absolut", preco: 89.9 },
-    { id: 3, nome: "Hambúrguer", preco: 30.0 },
-    { id: 4, nome: "Batata Frita", preco: 15.0 },
-    { id: 5, nome: "Refrigerante", preco: 5.0 },
-  ];
-
-  const [mesaSelecionada, setMesaSelecionada] = useState<Mesa | null>(null);
-  const [carrinho, setCarrinho] = useState<{ produto: Produto; quantidade: number }[]>([]);
-
-  const adicionarProduto = (produto: Produto) => {
-    setCarrinho((prev) => {
-      const existente = prev.find((item) => item.produto.id === produto.id);
-      if (existente) {
-        return prev.map((item) =>
-          item.produto.id === produto.id ? { ...item, quantidade: item.quantidade + 1 } : item
-        );
-      } else {
-        return [...prev, { produto, quantidade: 1 }];
-      }
-    });
-  };
-
-  const removerProduto = (produtoId: number) => {
-    setCarrinho((prev) => prev.filter((item) => item.produto.id !== produtoId));
-  };
-
-  const finalizarPedido = () => {
-    if (!mesaSelecionada || carrinho.length === 0) {
-      alert("Selecione uma mesa e adicione produtos ao pedido!");
-      return;
+  const handleToggleProduto = (produto: Produto) => {
+    if (produtosSelecionados.find((p) => p.nome === produto.nome)) {
+      setProdutosSelecionados(produtosSelecionados.filter((p) => p.nome !== produto.nome));
+    } else {
+      setProdutosSelecionados([...produtosSelecionados, produto]);
     }
-
-    alert(
-      `Pedido finalizado para ${mesaSelecionada.nome}:\n` +
-        carrinho
-          .map((item) => `${item.produto.nome} x ${item.quantidade}`)
-          .join("\n") +
-        `\nTotal: R$ ${carrinho
-          .reduce((acc, item) => acc + item.produto.preco * item.quantidade, 0)
-          .toFixed(2)}`
-    );
-
-    // Limpar seleção
-    setMesaSelecionada(null);
-    setCarrinho([]);
   };
+
+  const handleAdicionar = () => {
+    if (!mesaId || produtosSelecionados.length === 0) return;
+
+    produtosSelecionados.forEach((produto) => adicionarProduto(mesaId, { ...produto }));
+    setProdutosSelecionados([]);
+  };
+
+  const total = produtosSelecionados.reduce((acc, p) => acc + p.preco, 0);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F4E6CE] p-4">
-      <h1 className="text-2xl font-bold text-[#38331E] mb-6 text-center">Pedidos das Mesas</h1>
+    <div className="flex flex-col min-h-screen bg-[#F4E6CE] px-4 py-6">
+      <h1 className="text-2xl font-bold text-[#38331E] mb-6 text-center">
+        Fazer Pedido
+      </h1>
 
-      {/* Seleção de mesa */}
-      <div className="mb-6 flex gap-4 flex-wrap justify-center">
-        {mesas.map((mesa) => (
-          <button
-            key={mesa.id}
-            disabled={!mesa.ocupada}
-            onClick={() => setMesaSelecionada(mesa)}
-            className={`px-4 py-2 rounded-md font-semibold ${
-              mesaSelecionada?.id === mesa.id
-                ? "bg-[#D9AB67] text-[#38331E]"
-                : mesa.ocupada
-                ? "bg-[#38331E] text-white"
-                : "bg-gray-400 text-gray-200 cursor-not-allowed"
-            }`}
-          >
-            {mesa.nome}
-          </button>
-        ))}
-      </div>
-
-      {/* Lista de produtos */}
-      <h2 className="text-xl font-semibold mb-2">Produtos Disponíveis</h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-        {produtos.map((produto) => (
-          <div
-            key={produto.id}
-            className="bg-[#D9AB67] p-4 rounded-lg cursor-pointer hover:opacity-80"
-            onClick={() => adicionarProduto(produto)}
-          >
-            <p className="font-semibold text-[#38331E]">{produto.nome}</p>
-            <p className="text-[#38331E]">R$ {produto.preco.toFixed(2)}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Carrinho */}
-      <h2 className="text-xl font-semibold mb-2">Carrinho</h2>
-      <div className="flex flex-col gap-2 mb-6">
-        {carrinho.length === 0 && <p className="text-[#38331E]">Nenhum produto adicionado</p>}
-        {carrinho.map((item) => (
-          <div
-            key={item.produto.id}
-            className="flex justify-between items-center bg-[#F4E6CE] border border-[#D9AB67] rounded-lg p-2"
-          >
-            <p className="text-[#38331E]">
-              {item.produto.nome} x {item.quantidade}
-            </p>
-            <button
-              className="px-2 py-1 rounded-md bg-[#B91C1C] text-white hover:opacity-80"
-              onClick={() => removerProduto(item.produto.id)}
-            >
-              Remover
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {/* Finalizar pedido */}
-      <button
-        onClick={finalizarPedido}
-        className="w-full py-3 rounded-md font-semibold bg-[#38331E] text-white hover:opacity-90 transition"
+      <label className="mb-2 font-semibold text-[#38331E]">Selecione a mesa:</label>
+      <select
+        value={mesaId ?? ""}
+        onChange={(e) => setMesaId(Number(e.target.value))}
+        className="p-2 rounded mb-4 border border-gray-400 bg-[#D8A865] text-[#38331E] font-semibold"
       >
-        Finalizar Pedido
+        <option value="">-- Escolher mesa --</option>
+        {mesas.map((mesa) => (
+          <option key={mesa.id} value={mesa.id}>
+            {mesa.nome}
+          </option>
+        ))}
+      </select>
+
+      {categorias.map((categoria) => (
+        <div key={categoria.nome} className="mb-6">
+          <h2 className="text-xl font-bold mb-2 text-[#38331E]">{categoria.nome}</h2>
+          <div className="grid grid-cols-2 gap-2">
+            {categoria.produtos.map((produto) => (
+              <label
+                key={produto.nome}
+                className="flex items-center bg-[#D8A865] text-[#38331E] p-2 rounded cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={!!produtosSelecionados.find((p) => p.nome === produto.nome)}
+                  onChange={() => handleToggleProduto(produto)}
+                  className="mr-2"
+                />
+                {produto.nome} - R$ {produto.preco.toFixed(2)}
+              </label>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {produtosSelecionados.length > 0 && (
+        <div className="mb-4 font-semibold text-[#38331E]">
+          <p>Selecionados: {produtosSelecionados.map((p) => p.nome).join(", ")}</p>
+          <p>Total: R$ {total.toFixed(2)}</p>
+        </div>
+      )}
+
+      <button
+        onClick={handleAdicionar}
+        className="bg-[#38331E] text-white py-3 rounded-md font-semibold hover:opacity-90 transition mb-4"
+      >
+        Adicionar Pedido
       </button>
+
+      {/* Botão para ver mesas */}
+      <Link
+        href="/mapaMesas"
+        className="bg-[#D8A865] text-[#38331E] py-3 rounded-md font-semibold hover:opacity-90 transition text-center"
+      >
+        Ver Mesas
+      </Link>
     </div>
   );
 }
