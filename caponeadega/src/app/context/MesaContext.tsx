@@ -25,7 +25,7 @@ const MesaContext = createContext<MesaContextType | undefined>(undefined);
 
 export const MesaProvider = ({ children }: { children: ReactNode }) => {
   const [mesas, setMesas] = useState<Mesa[]>(
-    Array.from({ length: 100 }, (_, i) => ({
+    Array.from({ length: 60 }, (_, i) => ({
       id: i + 1,
       nome: `Mesa ${i + 1}`,
       ocupada: false,
@@ -38,14 +38,7 @@ export const MesaProvider = ({ children }: { children: ReactNode }) => {
     setMesas((prev) =>
       prev.map((mesa) =>
         mesa.id === id
-          ? {
-              ...mesa,
-              ocupada: true,
-              cliente,
-              telefone,
-              produtos: [], // limpa pedidos antigos
-              consumo: 0,   // zera consumo
-            }
+          ? { ...mesa, ocupada: true, cliente, telefone, produtos: mesa.produtos, consumo: mesa.consumo }
           : mesa
       )
     );
@@ -55,14 +48,7 @@ export const MesaProvider = ({ children }: { children: ReactNode }) => {
     setMesas((prev) =>
       prev.map((mesa) =>
         mesa.id === id
-          ? {
-              ...mesa,
-              ocupada: false,
-              cliente: "",
-              telefone: "",
-              produtos: [],
-              consumo: 0,
-            }
+          ? { ...mesa, ocupada: false, cliente: "", telefone: "", produtos: [], consumo: 0 }
           : mesa
       )
     );
@@ -76,6 +62,7 @@ export const MesaProvider = ({ children }: { children: ReactNode }) => {
               ...mesa,
               produtos: [...mesa.produtos, produto],
               consumo: (mesa.consumo || 0) + produto.preco,
+              ocupada: true,
             }
           : mesa
       )
