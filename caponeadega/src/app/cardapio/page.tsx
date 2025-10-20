@@ -32,7 +32,7 @@ export default function Cardapio() {
   const [comandaCount, setComandaCount] = useState(0);
   const [categoriaAtiva, setCategoriaAtiva] = useState("Ver tudo");
   const [mesaAtiva, setMesaAtiva] = useState<string>("");
-  const [confirmProduto, setConfirmProduto] = useState<Produto | null>(null); // produto para confirmação
+  const [confirmProduto, setConfirmProduto] = useState<Produto | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
 
@@ -58,9 +58,7 @@ export default function Cardapio() {
     return () => window.removeEventListener("comandaUpdated", updateComandaCount);
   }, [mesaAtiva]);
 
-  const handleAddProduct = (produto: Produto) => {
-    setConfirmProduto(produto); // mostra pop-up de confirmação
-  };
+  const handleAddProduct = (produto: Produto) => setConfirmProduto(produto);
 
   const confirmAddProduct = (produto: Produto) => {
     if (!mesaAtiva) return;
@@ -68,11 +66,8 @@ export default function Cardapio() {
     const comandaMesa = todasComandas[mesaAtiva] || [];
 
     const index = comandaMesa.findIndex((p: Produto) => p.id === produto.id);
-    if (index !== -1) {
-      comandaMesa[index].quantidade = (comandaMesa[index].quantidade || 1) + 1;
-    } else {
-      comandaMesa.push({ ...produto, quantidade: 1 });
-    }
+    if (index !== -1) comandaMesa[index].quantidade = (comandaMesa[index].quantidade || 1) + 1;
+    else comandaMesa.push({ ...produto, quantidade: 1 });
 
     todasComandas[mesaAtiva] = comandaMesa;
     localStorage.setItem("comandas", JSON.stringify(todasComandas));
@@ -80,63 +75,94 @@ export default function Cardapio() {
     setConfirmProduto(null);
   };
 
-  const categorias = ["Ver tudo", ...Array.from(new Set(produtos.map((p) => p.categoria)))];
+  const categorias = ["Ver tudo", ...Array.from(new Set(produtos.map(p => p.categoria)))];
   const produtosFiltrados = categoriaAtiva === "Ver tudo" ? produtos : produtos.filter(p => p.categoria === categoriaAtiva);
 
+  const produtosAgrupados = produtos.reduce((acc: Record<string, Produto[]>, produto) => {
+    if (!acc[produto.categoria]) acc[produto.categoria] = [];
+    acc[produto.categoria].push(produto);
+    return acc;
+  }, {});
+
   return (
-    <main className="min-h-screen w-full flex flex-col items-center p-6 bg-[#F4E6CE]">
-      <header className="w-full flex justify-between items-center mb-6 relative">
-        <Image src="/ganso.png" alt="Logo Goose" width={80} height={80} />
-        {/* Menu sanduíche */}
-        <div className="relative">
-          <button className="text-3xl font-bold text-black" onClick={() => setMenuOpen(!menuOpen)}>☰</button>
-          {menuOpen && (
-            <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg z-10" style={{ backgroundColor: "#D8A865" }}>
-              <div className="px-4 py-2 font-bold text-black rounded-t-md">CATEGORIAS</div>
-              <hr className="border-gray-400" />
-              {categorias.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => { setCategoriaAtiva(cat); setMenuOpen(false); }}
-                  className={`w-full text-left px-4 py-2 text-black hover:brightness-90 ${categoriaAtiva === cat ? "font-bold underline" : ""}`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+    <main className="min-h-screen w-full flex flex-col items-center p-6 bg-black font-serif relative">
+      {/* HEADER */}
+      <header className="w-full flex justify-end items-center mb-6 relative">
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className={`relative transition-transform duration-500 ${menuOpen ? "rotate-180" : "rotate-0"}`}
+        >
+          <Image
+            src={menuOpen ? "/iconeVermelho.png" : "/iconeBranco.png"}
+            alt="Menu"
+            width={40}
+            height={40}
+            className="transition-all duration-500"
+          />
+        </button>
+
+        {menuOpen && (
+          <div className="absolute top-12 right-0 w-56 bg-[#1a1a1a] rounded-md shadow-lg z-50 transition-all duration-500 animate-slide-in">
+            <div className="px-4 py-2 font-bold text-white border-b border-red-700">CATEGORIAS</div>
+            {categorias.map(cat => (
+              <button
+                key={cat}
+                onClick={() => { setCategoriaAtiva(cat); setMenuOpen(false); }}
+                className={`w-full text-left px-4 py-2 text-white hover:bg-red-700 transition ${
+                  categoriaAtiva === cat ? "font-bold underline text-white" : "text-white"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
       </header>
 
-      <div className="w-full flex flex-col gap-4">
-        {produtosFiltrados.map(item => (
-          <ProdutoCard key={item.id} item={item} handleAddProduct={handleAddProduct} />
-        ))}
+      {/* PRODUTOS */}
+      <div className="w-full flex flex-col gap-6">
+        {categoriaAtiva === "Ver tudo" ? (
+          Object.keys(produtosAgrupados).map((categoria) => (
+            <div key={categoria} className="mb-6">
+              <h2 className="text-2xl font-bold text-white mb-3">{categoria.toUpperCase()}</h2>
+              <div className="flex flex-col gap-4">
+                {produtosAgrupados[categoria].map(item => (
+                  <ProdutoCard key={item.id} item={item} handleAddProduct={handleAddProduct} />
+                ))}
+              </div>
+            </div>
+          ))
+        ) : (
+          produtosFiltrados.map(item => (
+            <ProdutoCard key={item.id} item={item} handleAddProduct={handleAddProduct} />
+          ))
+        )}
       </div>
 
+      {/* BOTÃO COMANDA */}
       <button
-        className="fixed bottom-6 bg-[#3b2f2f] text-white font-bold py-3 px-6 rounded-xl shadow-md"
+        className="fixed bottom-6 bg-red-700 text-white font-bold py-3 px-6 rounded-xl shadow-[0_0_15px_#ff000040] hover:shadow-[0_0_25px_#ff000060] transition-all"
         onClick={() => router.push(`/comandaCliente?mesa=${mesaAtiva}`)}
       >
-        Minha Comanda <span className="ml-2 bg-red-600 text-white px-2 py-1 rounded-full text-sm">{comandaCount}</span>
+        Minha Comanda <span className="ml-2 bg-black text-white px-2 py-1 rounded-full text-sm">{comandaCount}</span>
       </button>
 
-      {/* Pop-up de confirmação */}
+      {/* POP-UP */}
       {confirmProduto && (
-        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
-          <div className="bg-[#F4E6CE] p-6 rounded-xl shadow-xl flex flex-col items-center gap-4 pointer-events-auto animate-popup">
-            <span className="font-bold text-black">Deseja adicionar este produto?</span>
-            <span className="text-sm text-black">{confirmProduto.nome}</span>
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-[#1a1a1a] p-6 rounded-xl shadow-[0_0_25px_#ff000040] flex flex-col items-center gap-4 animate-popup">
+            <span className="font-bold text-white text-lg">Deseja adicionar este produto?</span>
+            <span className="text-red-700 font-semibold">{confirmProduto.nome}</span>
             <div className="flex gap-4 mt-2">
               <button
                 onClick={() => confirmAddProduct(confirmProduto)}
-                className="bg-green-600 text-white px-4 py-2 rounded-xl font-bold hover:brightness-90"
+                className="bg-red-700 text-white px-4 py-2 rounded-xl font-bold hover:shadow-[0_0_15px_#ff0000]"
               >
                 Sim
               </button>
               <button
                 onClick={() => setConfirmProduto(null)}
-                className="bg-red-600 text-white px-4 py-2 rounded-xl font-bold hover:brightness-90"
+                className="bg-gray-800 text-white px-4 py-2 rounded-xl font-bold hover:brightness-110"
               >
                 Não
               </button>
@@ -153,6 +179,13 @@ export default function Cardapio() {
           0% { transform: scale(0.7); opacity: 0; }
           100% { transform: scale(1); opacity: 1; }
         }
+        .animate-slide-in {
+          animation: slideIn 0.5s ease forwards;
+        }
+        @keyframes slideIn {
+          0% { transform: translateX(100%); opacity: 0; }
+          100% { transform: translateX(0); opacity: 1; }
+        }
       `}</style>
     </main>
   );
@@ -160,20 +193,20 @@ export default function Cardapio() {
 
 function ProdutoCard({ item, handleAddProduct }: { item: Produto; handleAddProduct: (p: Produto) => void }) {
   return (
-    <div className="flex items-center gap-4 p-4 border rounded-xl bg-[#F4E6CE] w-full h-28" style={{ borderColor: "#D9AB67" }}>
+    <div className="flex items-center gap-4 p-4 rounded-xl bg-[#1a1a1a] w-full h-28 hover:bg-[#2a2a2a] transition">
       <div className="relative">
         <Image src={item.imagem} alt={item.nome} width={80} height={80} className="rounded-lg" />
         <button
-          className="absolute bottom-0 right-0 bg-black text-white text-xs w-5 h-5 flex items-center justify-center rounded-full shadow-md hover:bg-gray-800 active:scale-90 transition-transform duration-150"
+          className="absolute bottom-0 right-0 bg-red-700 text-white text-xs w-6 h-6 flex items-center justify-center rounded-full shadow-md hover:shadow-[0_0_10px_#ff0000] active:scale-90 transition-transform duration-150"
           onClick={() => handleAddProduct(item)}
         >
           +
         </button>
       </div>
       <div className="flex flex-col justify-center flex-1">
-        <h3 className="font-semibold text-lg text-black">{item.nome}</h3>
-        <p className="text-sm text-black">{item.descricao}</p>
-        <span className="text-sm font-bold text-black">{item.preco}</span>
+        <h3 className="font-bold text-white text-lg">{item.nome}</h3>
+        <p className="text-sm text-gray-300">{item.descricao}</p>
+        <span className="text-sm font-bold text-red-700">{item.preco}</span>
       </div>
     </div>
   );

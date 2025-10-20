@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function MinhaLoja() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const router = useRouter();
 
   const menuItems = [
@@ -16,29 +17,53 @@ export default function MinhaLoja() {
     { label: "Sair", path: "/sair" },
   ];
 
+  // Detecta se está em desktop
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
-    <div className="flex flex-col min-h-screen bg-black text-white relative font-serif">
-      {/* Conteúdo principal com opacidade quando o menu estiver aberto */}
+    <div className="flex flex-col min-h-screen bg-black text-white relative font-serif overflow-hidden">
+      {/* ÍCONE DO MENU */}
+      <motion.button
+        onClick={() => setMenuOpen(!menuOpen)}
+        animate={{
+          rotate: menuOpen ? 180 : 0,
+          x: menuOpen ? (isDesktop ? 295 : 265) : 0,
+          opacity: menuOpen ? 1 : 1, // agora sempre opaco
+        }}
+        transition={{ duration: 0.35, ease: "easeInOut" }}
+        className="fixed left-[3px] top-4 p-2 focus:outline-none z-30 sm:left-[5px] sm:top-6"
+      >
+        <motion.div
+          animate={{
+            filter: menuOpen
+              ? "drop-shadow(0 0 10px #ff0000)"
+              : "drop-shadow(0 0 4px #ffffff80)",
+            opacity: menuOpen ? 1 : 1, // ícone vermelho totalmente opaco
+          }}
+          transition={{ duration: 0.3 }}
+        >
+          <Image
+            src={menuOpen ? "/iconeVermelho.png" : "/iconeBranco.png"}
+            alt="Menu"
+            width={36}
+            height={36}
+            className="transition-all duration-300"
+          />
+        </motion.div>
+      </motion.button>
+
+      {/* CONTEÚDO PRINCIPAL */}
       <motion.div
         className="flex-1"
         animate={{ opacity: menuOpen ? 0.3 : 1 }}
         transition={{ duration: 0.3 }}
       >
-        {/* Cabeçalho */}
         <header className="flex flex-col items-center mb-10 relative z-10 px-4 sm:px-6 md:px-8">
-          {/* Menu sanduíche */}
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="absolute left-4 top-4 p-2 focus:outline-none z-30 sm:left-6 sm:top-6"
-          >
-            <div className="flex flex-col space-y-1">
-              <span className="block w-6 h-0.5 bg-red-700"></span>
-              <span className="block w-4 h-0.5 bg-red-700"></span>
-              <span className="block w-2 h-0.5 bg-red-700"></span>
-            </div>
-          </button>
-
-          {/* Logo e título */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -58,10 +83,7 @@ export default function MinhaLoja() {
           </motion.div>
         </header>
 
-        {/* Botões principais */}
-        <motion.div
-          className="flex flex-col gap-5 max-w-md mx-auto mt-8 w-full relative px-4 sm:px-0"
-        >
+        <motion.div className="flex flex-col gap-5 max-w-md mx-auto mt-8 w-full relative px-4 sm:px-0">
           <button
             onClick={() => router.push("/registroFuncionario")}
             className="w-full py-3 rounded-md font-bold uppercase tracking-wide
@@ -91,21 +113,20 @@ export default function MinhaLoja() {
           </button>
         </motion.div>
 
-        {/* Rodapé */}
         <div className="absolute bottom-6 text-gray-500 italic text-sm tracking-widest text-center w-full z-10">
           “Negócios são negócios.”
         </div>
       </motion.div>
 
-      {/* Menu lateral */}
+      {/* MENU LATERAL */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
-            className="fixed top-0 left-0 h-full w-64 sm:w-56 xs:w-48 bg-[#1a1a1a] border-r border-red-800 shadow-[0_0_25px_#ff000050] z-20 flex flex-col"
+            className="fixed top-0 left-0 h-full w-80 sm:w-72 bg-[#1a1a1a]/100 border-r border-red-800 shadow-[0_0_25px_#ff000050] z-20 flex flex-col backdrop-blur-sm"
             initial={{ x: -300, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
+            animate={{ x: 0, opacity: 1 }} // opacidade máxima quando aberto
             exit={{ x: -300, opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
             <div className="flex justify-end p-3">
               <button
@@ -115,6 +136,7 @@ export default function MinhaLoja() {
                 ←
               </button>
             </div>
+
             <ul className="flex flex-col mt-10 text-white font-medium">
               {menuItems.map((item, i) => (
                 <li
